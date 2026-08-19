@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- Added support for analyzing artifacts compiled for Java 21 (class file major version 65), which previously
+  failed with `IllegalArgumentException: Unsupported class file major version 65`.
+  - Upgraded ASM to 9.8.
+  - Raised the ASM API level used by the class and method visitors to `ASM9`.
+
 ## [0.1.7] - 2021-05-06
 ### Changed
 - Fixed the filter logic issue associated with multiple exclusions (by @nath-abhishek).
