@@ -5,7 +5,7 @@
 
 Jarviz graph tool is designed for graphing the dependency coupling data for Java applications. The dependency coupling data provided as a [JSON Lines (.jsonl)](http://jsonlines.org/) file is generated from [Jarviz Java library](../jarviz-lib).
 
-In order to run the tool, Jarviz Graph expects [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) to be installed in the system as a prerequisite.
+In order to run the tool, Jarviz Graph expects [node](https://nodejs.org) (18 or newer) and [npm](https://www.npmjs.com/get-npm) (8 or newer) to be installed in the system as a prerequisite.
 
 ### Sample Dependency Graph
 
