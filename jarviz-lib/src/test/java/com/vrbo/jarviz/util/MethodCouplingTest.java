@@ -52,7 +52,7 @@ public class MethodCouplingTest {
 
         final List<MethodCoupling> couplings = collector.getMethodCouplings();
 
-        assertThat(couplings).hasSize(17);
+        assertThat(couplings).hasSize(19);
 
         // verify direct method calls
         assertThat(couplings).contains(
@@ -102,6 +102,19 @@ public class MethodCouplingTest {
             assertThat(call.getSource().getMethodName())
                 .contains("doC")
                 .contains("lambda");
+        }
+
+        // the enclosing method is coupled to the lambda bodies it creates, not to the JDK
+        // bootstrap method that links the call site
+        final List<MethodCoupling> callsFromDoC =
+            couplings.stream()
+                     .filter(mc -> mc.getSource().getMethodName().equals("doC"))
+                     .collect(Collectors.toList());
+
+        assertThat(callsFromDoC).hasSize(2);
+        for (MethodCoupling call : callsFromDoC) {
+            assertThat(call.getTarget().getClassName()).isEqualTo(MySource.class.getName());
+            assertThat(call.getTarget().getMethodName()).contains("lambda$doC$");
         }
 
     }
