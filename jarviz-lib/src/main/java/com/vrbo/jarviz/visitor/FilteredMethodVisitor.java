@@ -56,7 +56,15 @@ public class FilteredMethodVisitor extends MethodVisitor {
                                        final Handle handle,
                                        final Object... bootstrapMethodArguments) {
         super.visitInvokeDynamicInsn(name, descriptor, handle, bootstrapMethodArguments);
-        handleTargetMethod(handle.getOwner(), handle.getName(), handle.getDesc());
+
+        // The handle points to the bootstrap method (eg: LambdaMetafactory#metafactory), not to the call target.
+        // The actual implementation methods are passed to the bootstrap method as method handle arguments.
+        for (final Object argument : bootstrapMethodArguments) {
+            if (argument instanceof Handle) {
+                final Handle implHandle = (Handle) argument;
+                handleTargetMethod(implHandle.getOwner(), implHandle.getName(), implHandle.getDesc());
+            }
+        }
     }
 
     private void handleTargetMethod(final String targetClassName,
