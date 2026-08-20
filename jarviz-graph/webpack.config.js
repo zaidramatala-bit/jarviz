@@ -14,12 +14,11 @@
 // limitations under the License.
 //--------------------------------------------------------------------------
 
-const cssnano = require('cssnano');
-const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
-const SystemBellPlugin = require('system-bell-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const pkg = require('./package.json');
 const {processData} = require('./lib/index');
@@ -27,12 +26,17 @@ const {processData} = require('./lib/index');
 const devMode = process.env.NODE_ENV !== 'production';
 
 module.exports = {
-    devtool: devMode ? 'source-map' : 'none',
+    devtool: devMode ? 'source-map' : false,
     mode: devMode ? 'development' : 'production',
     entry: path.join(__dirname, 'lib/client/index.js'),
     output: {
         path: path.join(__dirname, 'build/client'),
         filename: `jarviz-client.js`
+    },
+    optimization: {
+        // Keep dependency license banners inside the bundle: the production output is a single
+        // self-contained HTML file, so a separate LICENSE.txt asset would be lost.
+        minimizer: [new TerserPlugin({extractComments: false})]
     },
     module: {
         rules: [
@@ -42,78 +46,47 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.less$/,
-                use: [
-                    devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    {
-                        loader: 'postcss-loader',
-                        options: {
-                            ident: 'postcss',
-                            plugins: [cssnano({safe: true})]
-                        }
-                    },
-                    {
-                        loader: 'less-loader'
-                    }
-                ]
-            },
-            {
                 test: /\.css$/,
-                loaders: ['style-loader', 'css-loader']
+                use: ['style-loader', 'css-loader']
             },
             {
-                test: /\.png$/,
-                loader: 'url-loader?limit=999999999999&mimetype=image/png'
+                test: /\.(png|svg)$/,
+                type: 'asset/inline'
+            },
+            {
+                test: /\.(eot|ttf)$/,
+                type: 'asset/inline'
             },
             {
                 test: /\.jpg$/,
-                loader: 'file-loader'
-            },
-            {
-                test: /\.svg$/,
-                loader: 'url-loader?limit=999999999999'
-            },
-            {
-                test: /\.eot$/,
-                loader: 'url-loader?limit=100000'
-            },
-            {
-                test: /\.ttf$/,
-                loader: 'url-loader?limit=100000'
-            },
-            {
-                test: /\.js$/,
-                loader: 'eslint-loader',
-                query: {
-                    emitWarning: true,
-                    quiet: true
-                },
-                exclude: /node_modules|tests/
+                type: 'asset/resource'
             }
         ]
     },
     plugins: [
-        new SystemBellPlugin(),
+        new ESLintPlugin({
+            emitWarning: true,
+            quiet: true,
+            exclude: ['node_modules', 'tests']
+        }),
         new HtmlWebpackPlugin({
-            inlineSource: devMode ? '' : '.(js|css)$',
-            prerender: true,
             title: `${pkg.name} - ${pkg.description}`,
             filename: devMode ? 'index.html' : 'jarviz-graph.html',
             template: path.join(__dirname, 'lib/client/index.html'),
             templateParameters: {
                 jarvizData: devMode ? 'false' : '{{{JARVIZ_DATA}}}'
-            },
-            showErrors: devMode
+            }
         }),
-        new HtmlWebpackInlineSourcePlugin()
+        ...(devMode ? [] : [new HtmlInlineScriptPlugin()])
     ],
     devServer: {
-        contentBase: path.join(__dirname, 'lib/client'),
+        static: {
+            directory: path.join(__dirname, 'lib/client')
+        },
         port: 8080,
         open: true,
-        before: function(app) {
-            app.get('/data', function(req, res) {
+        setupMiddlewares: function(middlewares, devServer) {
+            devServer.app.get('/data', function(req, res) {
                 const fileName = req.query.name || 'jarviz-graph-data-1';
                 console.log(`Requesting "${fileName}"`);
                 processData(path.join(__dirname, `lib/mock/${fileName}.jsonl`), ({data, dataName}) => {
@@ -121,6 +94,7 @@ module.exports = {
                     res.json({data});
                 });
             });
+            return middlewares;
         }
     }
 };

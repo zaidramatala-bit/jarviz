@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 12.x ]
+        node-version: [ 20.x ]
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
@@ -68,7 +68,7 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ env.cache-name }}-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-npm
       - name: Display system info
         run: |
@@ -85,7 +85,7 @@ jobs:
           JARVIZ_HOME="$(pwd)"
           cd ./jarviz-graph
           echo 'Installing jarviz-graph'
-          npm install
+          npm ci
           echo 'Building jarviz-graph'
           npm run build
           cd "${JARVIZ_HOME}"
