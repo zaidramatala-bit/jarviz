@@ -71,13 +71,37 @@ public class JarClassLoaderService implements ClassLoaderService {
         }
 
         final String jarFilePath = jarFile.getPath();
-        final ClassPath classPath;
+        final URLClassLoader classLoader;
         try {
-            final ClassLoader classLoader = creatClassLoaderForJar(jarFilePath);
-            classPath = ClassPath.from(classLoader);
-        } catch (IOException e) {
+            classLoader = creatClassLoaderForJar(jarFilePath);
+        } catch (MalformedURLException e) {
             log.error("Unable to create classloader for jar {}", jarFilePath, e);
             throw new IllegalStateException(String.format("Unable to create classloader for jar %s", jarFilePath), e);
+        }
+
+        // The class loader keeps the jar file open, so it is closed as soon as the class bytes have
+        // been read. Without this, an application set with many artifacts accumulates one open jar
+        // file and one class loader per artifact for the lifetime of the analysis.
+        try {
+            return readClasses(classLoader, jarFilePath, classNameFilter);
+        } finally {
+            try {
+                classLoader.close();
+            } catch (IOException e) {
+                log.warn("Unable to close classloader for jar {}", jarFilePath, e);
+            }
+        }
+    }
+
+    private List<ShadowClass> readClasses(final ClassLoader classLoader,
+                                          final String jarFilePath,
+                                          final Predicate<String> classNameFilter) {
+        final ClassPath classPath;
+        try {
+            classPath = ClassPath.from(classLoader);
+        } catch (IOException e) {
+            log.error("Unable to scan classpath for jar {}", jarFilePath, e);
+            throw new IllegalStateException(String.format("Unable to scan classpath for jar %s", jarFilePath), e);
         }
 
         final String prefix = fileNameToJarPrefix(jarFilePath);
@@ -112,14 +136,14 @@ public class JarClassLoaderService implements ClassLoaderService {
      * typically rt.jar and other core libraries located in $JAVA_HOME/jre/lib directory.
      * We are assuming here that the loaded classes from the Jar have not been already loaded
      * in the bootstrap classloader (to prevent collisions). For each Jar, a new classloader
-     * is created before the analysis and that class loader is destroyed (unloaded) along with
-     * the loaded classes from the Jar after the analysis.
+     * is created before the analysis and that class loader is closed (releasing the jar file)
+     * once the classes from the Jar have been read.
      *
      * @param jarFileName File name for the jar.
      * @return A classloader which is a child class loader of bootstrap class loader
      * @throws MalformedURLException For invalid file names
      */
-    private static ClassLoader creatClassLoaderForJar(@Nonnull final String jarFileName) throws MalformedURLException {
+    URLClassLoader creatClassLoaderForJar(@Nonnull final String jarFileName) throws MalformedURLException {
         final URL jarURL = new URL(fileNameToFileProtocol(jarFileName));
         final ClassLoader bootstrapClassLoader = ClassLoader.getSystemClassLoader().getParent();
         return URLClassLoader.newInstance(new URL[] {jarURL}, bootstrapClassLoader);
