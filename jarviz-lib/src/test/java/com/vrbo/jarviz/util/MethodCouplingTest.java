@@ -52,7 +52,7 @@ public class MethodCouplingTest {
 
         final List<MethodCoupling> couplings = collector.getMethodCouplings();
 
-        assertThat(couplings).hasSize(17);
+        assertThat(couplings).hasSize(19);
 
         // verify direct method calls
         assertThat(couplings).contains(
@@ -103,6 +103,22 @@ public class MethodCouplingTest {
                 .contains("doC")
                 .contains("lambda");
         }
+
+        // the invokedynamic call sites of doC point at the lambda implementation methods,
+        // not at the LambdaMetafactory bootstrap method
+        assertThat(couplings)
+            .contains(
+                new MethodCoupling.Builder()
+                    .source(new Method.Builder().className(MySource.class.getName()).methodName("doC").build())
+                    .target(new Method.Builder().className(MySource.class.getName()).methodName("lambda$doC$0").build())
+                    .build(),
+                new MethodCoupling.Builder()
+                    .source(new Method.Builder().className(MySource.class.getName()).methodName("doC").build())
+                    .target(new Method.Builder().className(MySource.class.getName()).methodName("lambda$doC$1").build())
+                    .build());
+
+        assertThat(couplings)
+            .noneMatch(c -> c.getTarget().getClassName().startsWith("java.lang.invoke"));
 
     }
 }
