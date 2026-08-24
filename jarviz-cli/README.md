@@ -4,12 +4,12 @@
 
 Jarviz CLI is a command-line tool designed for \*nix systems to perform dependency analysis for Java applications. Internally it uses both the [Jarviz Java library](../jarviz-lib) and [Jarviz graph tool](../jarviz-graph) to provide a useful command-line interface to the user.
 
-As a prerequisite, Jarviz CLI requires [java](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) to be installed.
+As a prerequisite, Jarviz CLI requires [java](https://openjdk.org), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) to be installed. The CLI supports **JDK 11 or newer** (tested on JDK 21) and **Node 14 or newer**, and it verifies both before running anything.
 
 
 ## Quick Start
 
-- Prerequisite: Verify that [java](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) are installed in the system.
+- Prerequisite: Verify that [java](https://openjdk.org), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) are installed in the system.
   - Java and Maven are required to download Java libraries.
   - Node and NPM are required to download Node modules.
 - Checkout the project from GitHub and change the directory to `jarviz-cli` module.
@@ -67,6 +67,30 @@ $ jarviz -h
 | 0        | Successful                |
 | 1        | CLI initialization failed |
 | 2        | Analyser failed           |
+
+### Version Preflight
+
+Before running a command, the CLI checks the tools it needs:
+
+- `java`, `mvn` (for `analyze` and `graph`) and `node`, `npm` (for `graph`) must be on the `PATH`.
+- The running JDK must be **11 or newer**. Both the legacy (`1.8.0_292`) and modern (`21.0.4`) version strings are understood.
+- Node must be **14 or newer**.
+
+When a version is too old, the CLI exits with status `1` and an actionable message, for example:
+
+```
+Error: Jarviz CLI needs Java 11 or newer, but found Java 1.8.0_292
+       Install a supported JDK (Java 11+, tested on Java 21) and point JAVA_HOME/PATH at it, then run Jarviz again.
+       Current java executable: /usr/lib/jvm/java-8-openjdk-amd64/bin/java
+```
+
+If a version string cannot be parsed at all, the CLI prints a warning and continues rather than blocking the run.
+
+The checks are covered by a POSIX `sh` test script:
+
+```shell
+$ sh test/preflight_test.sh
+```
 
 ### Versioning
 

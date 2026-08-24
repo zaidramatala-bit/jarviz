@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- Java 21 readiness (programme-level work, delivered across several work packages):
+  - The supported floor is now **JDK 11**, with **JDK 21** as the primary target and the version the project is tested on.
+  - Jarviz CLI performs a JDK and Node version preflight before running a command, failing with an actionable message on unsupported versions. Version parsing handles both legacy (`1.8.0_292`) and modern (`21.0.4`) JDK version strings.
+  - Documentation states the supported JDK/Node ranges, and the Java 8-only JVMS/opcode references were replaced with the current (SE 21) specification links.
+  - Known limitation: `jarviz-graph` is still on webpack 4 and does not build on modern Node (its build fails on Node 20); Node 14+ is supported for running the CLI, but building the graph from source still needs an older Node toolchain. Modernizing that build is tracked as separate work.
+- The CLI version and the artifact/npm version resolution logic are unchanged by this work.
+
 ## [0.1.7] - 2021-05-06
 ### Changed
 - Fixed the filter logic issue associated with multiple exclusions (by @nath-abhishek).
