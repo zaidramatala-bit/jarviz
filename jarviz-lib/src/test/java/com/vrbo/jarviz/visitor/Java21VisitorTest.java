@@ -27,6 +27,7 @@ import java.util.List;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -48,6 +49,8 @@ public class Java21VisitorTest {
 
     @BeforeClass
     public static void compileJava21Fixture() throws Exception {
+        Assume.assumeTrue(javaFeatureVersion() >= 21);
+
         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         final URL source = Java21VisitorTest.class.getClassLoader().getResource(FIXTURE_RESOURCE);
         compiledFixture = Files.createTempDirectory("jarviz-java21-fixture");
@@ -63,6 +66,13 @@ public class Java21VisitorTest {
                                 compiledFixture.toString(),
                                 Paths.get(source.toURI()).toString()))
             .isEqualTo(0);
+    }
+
+    private static int javaFeatureVersion() {
+        final String specificationVersion = System.getProperty("java.specification.version");
+        return Integer.parseInt(specificationVersion.startsWith("1.")
+                                ? specificationVersion.substring(2)
+                                : specificationVersion);
     }
 
     @Test
