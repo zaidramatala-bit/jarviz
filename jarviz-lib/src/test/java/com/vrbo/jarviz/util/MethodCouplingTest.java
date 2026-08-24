@@ -52,7 +52,7 @@ public class MethodCouplingTest {
 
         final List<MethodCoupling> couplings = collector.getMethodCouplings();
 
-        assertThat(couplings).hasSize(17);
+        assertThat(couplings).hasSize(19);
 
         // verify direct method calls
         assertThat(couplings).contains(
