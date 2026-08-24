@@ -29,8 +29,70 @@ JARVIZ_CONFIG_PATH="${JARVIZ_HOME}/config.json"
 JARVIZ_COMMAND_ANALYZE='analyze'
 JARVIZ_COMMAND_GRAPH='graph'
 
+# Minimum supported major versions. Jarviz is primarily tested on JDK 21.
+JARVIZ_MIN_JAVA_VERSION=11
+JARVIZ_MIN_NODE_VERSION=14
+
 jarviz_assert_exists() {
   hash "$1" >/dev/null 2>&1 || { echo >&2 "Error: Jarviz CLI needs $1 but it is not installed"; exit 1; }
+}
+
+# Extracts the major version number from a Java or Node version string.
+# Handles the legacy Java format (1.8.0_292 -> 8), the modern format
+# (21.0.4 -> 21, 11 -> 11), pre-release suffixes (17-ea -> 17) and the
+# Node format (v20.18.1 -> 20). Prints nothing if it cannot be parsed.
+jarviz_parse_major_version() {
+    jarviz_version="${1#v}"
+    # Drop any pre-release or build suffix (e.g. 17-ea, 21+35, 1.8.0_292)
+    jarviz_version="${jarviz_version%%-*}"
+    jarviz_version="${jarviz_version%%+*}"
+    jarviz_major="${jarviz_version%%.*}"
+    if [ "${jarviz_major}" = "1" ] && [ "${jarviz_version}" != "${jarviz_major}" ] ; then
+        # Legacy Java format: 1.8.0_292 -> 8
+        jarviz_version="${jarviz_version#*.}"
+        jarviz_major="${jarviz_version%%.*}"
+    fi
+    jarviz_major="${jarviz_major%%_*}"
+    case "${jarviz_major}" in
+        '' | *[!0-9]* ) return 0 ;;
+    esac
+    printf '%s' "${jarviz_major}"
+}
+
+# Prints the raw version string reported by the running JDK,
+# e.g. 21.0.4 or 1.8.0_292
+jarviz_java_version_string() {
+    java -version 2>&1 | sed -n 's/^.*version "\([^"]*\)".*$/\1/p' | head -n 1
+}
+
+jarviz_assert_java_version() {
+    jarviz_java_version=$(jarviz_java_version_string)
+    jarviz_java_major=$(jarviz_parse_major_version "${jarviz_java_version}")
+    if [ -z "${jarviz_java_major}" ] ; then
+        echo >&2 "Warning: Jarviz CLI could not determine the Java version (needs ${JARVIZ_MIN_JAVA_VERSION} or newer); continuing anyway"
+        return 0
+    fi
+    if [ "${jarviz_java_major}" -lt "${JARVIZ_MIN_JAVA_VERSION}" ] ; then
+        echo >&2 "Error: Jarviz CLI needs Java ${JARVIZ_MIN_JAVA_VERSION} or newer, but found Java ${jarviz_java_version}"
+        echo >&2 "       Install a supported JDK (Java ${JARVIZ_MIN_JAVA_VERSION}+, tested on Java 21) and point JAVA_HOME/PATH at it, then run Jarviz again."
+        echo >&2 "       Current java executable: $(command -v java)"
+        exit 1
+    fi
+}
+
+jarviz_assert_node_version() {
+    jarviz_node_version=$(node -v 2>/dev/null)
+    jarviz_node_major=$(jarviz_parse_major_version "${jarviz_node_version}")
+    if [ -z "${jarviz_node_major}" ] ; then
+        echo >&2 "Warning: Jarviz CLI could not determine the Node version (needs ${JARVIZ_MIN_NODE_VERSION} or newer); continuing anyway"
+        return 0
+    fi
+    if [ "${jarviz_node_major}" -lt "${JARVIZ_MIN_NODE_VERSION}" ] ; then
+        echo >&2 "Error: Jarviz CLI needs Node ${JARVIZ_MIN_NODE_VERSION} or newer, but found Node ${jarviz_node_version}"
+        echo >&2 "       Install a supported Node version (Node ${JARVIZ_MIN_NODE_VERSION}+) and run Jarviz again."
+        echo >&2 "       Current node executable: $(command -v node)"
+        exit 1
+    fi
 }
 
 jarviz_show_logo() {
@@ -79,6 +141,7 @@ jarviz_show_version() {
     echo "Npm Version: $(npm -v)"
     echo "Java Version:"
     java -version
+    echo "Supported: Java ${JARVIZ_MIN_JAVA_VERSION}+ (tested on Java 21), Node ${JARVIZ_MIN_NODE_VERSION}+"
 }
 
 jarviz_show_help() {
@@ -167,10 +230,12 @@ fi
 if [ ${jarviz_run_java_app} -gt 0 ] ; then
     jarviz_assert_exists java
     jarviz_assert_exists mvn
+    jarviz_assert_java_version
 fi
 if [ ${jarviz_run_node_app} -gt 0 ] ; then
     jarviz_assert_exists node
     jarviz_assert_exists npm
+    jarviz_assert_node_version
 fi
 
 # Checks out Jarviz artifact from Maven repo, if necessary
