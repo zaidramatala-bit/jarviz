@@ -29,6 +29,7 @@ import com.vrbo.jarviz.model.MethodCoupling;
 import com.vrbo.jarviz.service.UsageCollector;
 import com.vrbo.jarviz.util.couplingtest.Bar;
 import com.vrbo.jarviz.util.couplingtest.Foo;
+import com.vrbo.jarviz.util.couplingtest.LambdaSource;
 import com.vrbo.jarviz.util.couplingtest.MySource;
 import com.vrbo.jarviz.visitor.FilteredClassVisitor;
 
@@ -104,5 +105,55 @@ public class MethodCouplingTest {
                 .contains("lambda");
         }
 
+    }
+
+    @Test
+    public void testLambdaCouplings() throws IOException {
+        final UsageCollector collector = new UsageCollector();
+        final FilteredClassVisitor classVisitor = new FilteredClassVisitor(LambdaSource.class.getName(), collector);
+
+        classVisitor.visit();
+
+        final List<MethodCoupling> couplings = collector.getMethodCouplings();
+
+        assertThat(couplings)
+            .contains(
+                new MethodCoupling.Builder()
+                    .source(new Method.Builder()
+                                .className(LambdaSource.class.getName())
+                                .methodName("countNonEmpty")
+                                .build())
+                    .target(new Method.Builder()
+                                 .className(LambdaSource.class.getName())
+                                 .methodName("lambda$countNonEmpty$0")
+                                 .build())
+                    .build(),
+                new MethodCoupling.Builder()
+                    .source(new Method.Builder()
+                                .className(LambdaSource.class.getName())
+                                .methodName("mapWithMethodRef")
+                                .build())
+                    .target(new Method.Builder()
+                                 .className(Foo.class.getName())
+                                 .methodName("getFooLongVal")
+                                 .build())
+                    .build(),
+                new MethodCoupling.Builder()
+                    .source(new Method.Builder()
+                                .className(LambdaSource.class.getName())
+                                .methodName("mapWithConstructorRef")
+                                .build())
+                    .target(new Method.Builder()
+                                 .className(Bar.class.getName())
+                                 .methodName("<init>")
+                                 .build())
+                    .build());
+
+        assertThat(couplings.stream()
+                           .noneMatch(coupling -> coupling.getTarget()
+                                                           .getClassName()
+                                                           .equals("java.lang.invoke.LambdaMetafactory")))
+            .as("lambda couplings should not target LambdaMetafactory")
+            .isTrue();
     }
 }
