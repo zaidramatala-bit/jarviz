@@ -56,7 +56,13 @@ public class FilteredMethodVisitor extends MethodVisitor {
                                        final Handle handle,
                                        final Object... bootstrapMethodArguments) {
         super.visitInvokeDynamicInsn(name, descriptor, handle, bootstrapMethodArguments);
-        handleTargetMethod(handle.getOwner(), handle.getName(), handle.getDesc());
+        for (final Object bootstrapMethodArgument : bootstrapMethodArguments) {
+            if (bootstrapMethodArgument instanceof Handle) {
+                final Handle targetHandle = (Handle) bootstrapMethodArgument;
+                handleTargetMethod(targetHandle.getOwner(), targetHandle.getName(), targetHandle.getDesc());
+                break;
+            }
+        }
     }
 
     private void handleTargetMethod(final String targetClassName,
