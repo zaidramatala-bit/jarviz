@@ -16,6 +16,9 @@
 
 package com.vrbo.jarviz.visitor;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -56,7 +59,29 @@ public class FilteredMethodVisitor extends MethodVisitor {
                                        final Handle handle,
                                        final Object... bootstrapMethodArguments) {
         super.visitInvokeDynamicInsn(name, descriptor, handle, bootstrapMethodArguments);
-        handleTargetMethod(handle.getOwner(), handle.getName(), handle.getDesc());
+
+        final Handle targetHandle = findImplementationHandle(bootstrapMethodArguments).orElse(handle);
+        handleTargetMethod(targetHandle.getOwner(), targetHandle.getName(), targetHandle.getDesc());
+    }
+
+    /**
+     * The handle of an {@code invokedynamic} instruction points to the bootstrap method
+     * (e.g. {@code LambdaMetafactory.metafactory}), which is a JVM implementation detail rather
+     * than a dependency of the enclosing class. The method actually invoked by the call site is
+     * passed to the bootstrap method as an argument.
+     *
+     * @param bootstrapMethodArguments The arguments of the bootstrap method.
+     * @return The handle of the method invoked by the call site, if it can be resolved.
+     */
+    static Optional<Handle> findImplementationHandle(final Object[] bootstrapMethodArguments) {
+        if (bootstrapMethodArguments == null) {
+            return Optional.empty();
+        }
+
+        return Arrays.stream(bootstrapMethodArguments)
+                     .filter(arg -> arg instanceof Handle)
+                     .map(arg -> (Handle) arg)
+                     .findFirst();
     }
 
     private void handleTargetMethod(final String targetClassName,
