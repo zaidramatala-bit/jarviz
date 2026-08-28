@@ -33,7 +33,7 @@
         <google.guava.version>30.0-jre</google.guava.version>
         <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.11</logback.version>
-        <javax.inject.version>1</javax.inject.version>
+        <jakarta.inject.version>2.0.1</jakarta.inject.version>
         <fasterxml.jackson.version>2.9.8</fasterxml.jackson.version>
         <glassfish.hk2.version>3.0.3</glassfish.hk2.version>
         <commons-cli.version>1.5.0</commons-cli.version>
@@ -83,9 +83,9 @@
                 <version>${google.guava.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>${javax.inject.version}</version>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${jakarta.inject.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
@@ -96,22 +96,6 @@
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-locator</artifactId>
                 <version>${glassfish.hk2.version}</version>
-                <exclusions>
-                    <!--
-                    This is to remove the warning from shade maven plugin:
-                    [WARNING] javax.inject-2.5.0-b61.jar, javax.inject-1.jar define 6 overlapping classes:
-                    [WARNING]   - javax.inject.Inject
-                    [WARNING]   - javax.inject.Singleton
-                    [WARNING]   - javax.inject.Scope
-                    [WARNING]   - javax.inject.Named
-                    [WARNING]   - javax.inject.Provider
-                    [WARNING]   - javax.inject.Qualifier
-                    -->
-                    <exclusion>
-                        <artifactId>javax.inject</artifactId>
-                        <groupId>org.glassfish.hk2.external</groupId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.immutables</groupId>
@@ -198,8 +182,8 @@
             <artifactId>jackson-datatype-guava</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
