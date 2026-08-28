@@ -35,7 +35,7 @@ public class FilteredMethodVisitor extends MethodVisitor {
     public FilteredMethodVisitor(final Method sourceMethod,
                                  final MethodVisitor methodVisitor,
                                  final Collector collect) {
-        super(Opcodes.ASM9, methodVisitor);
+        super(Opcodes.ASM7, methodVisitor);
         this.sourceMethod = sourceMethod;
         this.collect = collect;
     }

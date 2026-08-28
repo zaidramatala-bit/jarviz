@@ -47,7 +47,7 @@ public class FilteredClassVisitor extends ClassVisitor {
     }
 
     private FilteredClassVisitor(final String className, final Collector collect, final ClassReader classReader) {
-        super(Opcodes.ASM9);
+        super(Opcodes.ASM7);
 
         Objects.requireNonNull(className);
         Objects.requireNonNull(collect);
