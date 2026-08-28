@@ -20,7 +20,7 @@ where "my-new-feature" describes what you're working on.
 
 ### jarviz-lib
 
-Use Maven to build the project and verify that projects compiles properly. This project was currently tested with Java 17.
+Use Maven to build the project and verify that projects compiles properly. This project was currently tested with Java 8 and Java 11.
 
 ```shell
 $ mvn clean install
