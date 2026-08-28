@@ -4,13 +4,13 @@
 
 Jarviz CLI is a command-line tool designed for \*nix systems to perform dependency analysis for Java applications. Internally it uses both the [Jarviz Java library](../jarviz-lib) and [Jarviz graph tool](../jarviz-graph) to provide a useful command-line interface to the user.
 
-As a prerequisite, Jarviz CLI requires [java](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) to be installed.
+As a prerequisite, Jarviz CLI requires [Java 17 or newer](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) to be installed.
 
 
 ## Quick Start
 
-- Prerequisite: Verify that [java](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) are installed in the system.
-  - Java and Maven are required to download Java libraries.
+- Prerequisite: Verify that [Java 17 or newer](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) are installed in the system.
+  - Java 17 or newer and Maven are required to download and run Java libraries.
   - Node and NPM are required to download Node modules.
 - Checkout the project from GitHub and change the directory to `jarviz-cli` module.
 - Run `./jarviz graph -f samples/filter.json -a samples/artifacts.json`
