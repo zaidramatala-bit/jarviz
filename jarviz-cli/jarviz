@@ -33,6 +33,31 @@ jarviz_assert_exists() {
   hash "$1" >/dev/null 2>&1 || { echo >&2 "Error: Jarviz CLI needs $1 but it is not installed"; exit 1; }
 }
 
+jarviz_assert_java_version() {
+    java_version=$(java -version 2>&1 | sed -n '1s/.*version "\([^"]*\)".*/\1/p')
+    case "${java_version}" in
+        1.*)
+            java_major=${java_version#1.}
+            java_major=${java_major%%.*}
+            ;;
+        *)
+            java_major=${java_version%%[.-]*}
+            ;;
+    esac
+
+    case "${java_major}" in
+        ''|*[!0-9]*)
+            echo >&2 "Error: Jarviz CLI could not determine the installed Java version"
+            exit 1
+            ;;
+    esac
+
+    if [ "${java_major}" -lt 17 ] ; then
+        echo >&2 "Error: Jarviz CLI requires Java 17 or newer, but found Java ${java_version}"
+        exit 1
+    fi
+}
+
 jarviz_show_logo() {
     echo '\033[0;32m                            x                             \033[0m'
     echo '\033[0;32m                           OOOO                           \033[0m'
@@ -166,6 +191,7 @@ fi
 # Verify all the required tools are installed
 if [ ${jarviz_run_java_app} -gt 0 ] ; then
     jarviz_assert_exists java
+    jarviz_assert_java_version
     jarviz_assert_exists mvn
 fi
 if [ ${jarviz_run_node_app} -gt 0 ] ; then

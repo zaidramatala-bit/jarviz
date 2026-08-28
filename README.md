@@ -13,7 +13,7 @@ Jarviz consists of 3 components:
 
 ### Jarviz Library ([jarviz-lib](jarviz-lib))
 
-This Java library scans the Java [bytecode](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html) of binary artifacts using a custom classloader and generates the dependency coupling data as a [JSON Lines (.jsonl)](http://jsonlines.org) file. Currently only JAR and WAR artifact formats are supported. To find the dependency couplings, Jarviz analyzes the [opcodes](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html) using [ASM](https://asm.ow2.io) bytecode analysis framework.
+This Java library scans the Java [bytecode](https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-6.html) of binary artifacts using a custom classloader and generates the dependency coupling data as a [JSON Lines (.jsonl)](http://jsonlines.org) file. Currently only JAR and WAR artifact formats are supported. To find the dependency couplings, Jarviz analyzes the [opcodes](https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-6.html) using [ASM](https://asm.ow2.io) bytecode analysis framework.
 
 ### Jarviz Graph Tool ([jarviz-graph](jarviz-graph))
 
@@ -25,8 +25,8 @@ Jarviz CLI is a command-line tool designed for \*nix systems to perform dependen
 
 ## Quick Start
 
-- Prerequisite: Verify that [java](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) are installed in the system.
-  - Java and Maven are required to download Java libraries.
+- Prerequisite: Verify that [Java 17 or newer](https://openjdk.java.net), [maven](https://maven.apache.org), [node](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) are installed in the system.
+  - Java 17 or newer and Maven are required to download and run Java libraries.
   - Node and NPM are required to download Node modules.
 - Checkout the project from GitHub and change the directory to `jarviz-cli` module.
 - Run `./jarviz graph -f samples/filter.json -a samples/artifacts.json`
