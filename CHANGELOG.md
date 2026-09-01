@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- Migrated the build to Java 17. `jarviz-lib` is now compiled with `--release 17` and requires Java 17 or newer at runtime; Java 8 and Java 11 are no longer supported.
+- Raised the ASM API level to `ASM9`, so records and sealed classes can be analyzed.
+
 ## [0.1.7] - 2021-05-06
 ### Changed
 - Fixed the filter logic issue associated with multiple exclusions (by @nath-abhishek).
